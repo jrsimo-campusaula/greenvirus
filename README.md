@@ -6,3 +6,4 @@ Equipo:
 - David Alabarta
 - Sandra Villena
 - Alberto Gomez
+- Javier Morales
