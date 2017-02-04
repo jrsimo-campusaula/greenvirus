@@ -7,6 +7,10 @@ import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.util.Log;
 
+import com.carto.core.MapPos;
+import com.carto.layers.CartoBaseMapStyle;
+import com.carto.layers.CartoOnlineVectorTileLayer;
+import com.carto.ui.MapView;
 import com.google.android.gms.appindexing.Action;
 import com.google.android.gms.appindexing.AppIndex;
 import com.google.android.gms.appindexing.Thing;
@@ -19,19 +23,10 @@ import com.google.android.gms.maps.OnMapReadyCallback;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.Marker;
 
-public class MainActivity extends AppCompatActivity
-        implements GoogleApiClient.ConnectionCallbacks,
-        GoogleApiClient.OnConnectionFailedListener,
-        OnMapReadyCallback,
-        GoogleMap.OnMapClickListener,
-        GoogleMap.OnMarkerClickListener {
+public class MainActivity extends AppCompatActivity{
 
-    private static final String TAG = MainActivity.class.getSimpleName();
 
-    //Variables para almacenar el fragmento que contendrá el mapa del tipo MapFragment, y el mapa de la API de Google
-    private MapFragment fragmentoMapa;
-    private GoogleMap mapa;
-    private GoogleApiClient apiGoogle;
+        private MapView mapa;
 
 
     @Override
@@ -39,83 +34,28 @@ public class MainActivity extends AppCompatActivity
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        // Iniciamos el mapa de Google
-        iniciarMapa();
-        
-        crearApiGoogle();
+
+        //Registro de la licencia para Carto, si, la API KEY es un troncho, se han pasao
+        MapView.registerLicense("XTUMwQ0ZFYVBubjNsa2Z3c2x3bEQ5SjhTMDdWN2xUWjdBaFVBbW1hekZYdTFsQzlWR1BhWk9MMmNJcVo3OHBVPQoKYXBwVG9rZW49ZmE0MjFkN2EtYTQ5YS00ZGIzLWJiYzYtYTA0MzE4Nzc0YjNmCnBhY2thZ2VOYW1lPWF1bGFjYW1wdXMudmFsZW5jaWFlbnZlcmQKb25saW5lTGljZW5zZT0xCnByb2R1Y3RzPXNkay1hbmRyb2lkLTQuKgp3YXRlcm1hcms9Y2FydG9kYgo=", getApplicationContext());
+
+        //Instanciamos el Widget que contendrá el mapa
+        mapa = (MapView) findViewById(R.id.mapa);
+
+        //Obtenemos la capa Base del mapa
+        CartoOnlineVectorTileLayer capaBase = new CartoOnlineVectorTileLayer(CartoBaseMapStyle.CARTO_BASEMAP_STYLE_DARK);
+
+        //Añadimos la capa base al mapa
+        mapa.getLayers().add(capaBase);
+
+        // Obtenemos una posición en el mapa, y la colocamos para que aparezca por defecto
+        MapPos valencia = mapa.getOptions().getBaseProjection().fromWgs84(new MapPos(-0.3762881, 39.4699075));
+        mapa.setFocusPos(valencia, 0);
+        mapa.setZoom(12, 0);
+
+
+
+        setTitle("Mapa Polen");
 
     }
 
-    private void crearApiGoogle() {
-        Log.d(TAG, "createGoogleApi()");
-        if ( apiGoogle == null ) {
-            apiGoogle = new GoogleApiClient.Builder( this )
-                    .addConnectionCallbacks( this )
-                    .addOnConnectionFailedListener( this )
-                    .addApi( LocationServices.API )
-                    .build();
-        }
-    }
-
-    // Initialize GoogleMaps
-    private void iniciarMapa() {
-        fragmentoMapa = (MapFragment) getFragmentManager().findFragmentById(R.id.mapa);
-        fragmentoMapa.getMapAsync(this);
-    }
-
-    // Callback called when Map is ready
-    @Override
-    public void onMapReady(GoogleMap googleMap) {
-
-        mapa = googleMap;
-        mapa.setOnMapClickListener(this);
-        mapa.setOnMarkerClickListener(this);
-    }
-
-    // Callback called when Map is touched
-    @Override
-    public void onMapClick(LatLng latLng) {
-    }
-
-    // Callback called when Marker is touched
-    @Override
-    public boolean onMarkerClick(Marker marker) {
-        return false;
-    }
-
-
-
-    @Override
-    protected void onStart() {
-        super.onStart();
-
-        // Llama a la API de Google cada vez que se inicia la actividad
-        apiGoogle.connect();
-    }
-
-    @Override
-    protected void onStop() {
-        super.onStop();
-
-        // Se desconecta de Google cada vez que la actividad se va a finalizar
-        apiGoogle.disconnect();
-    }
-
-    // Callback de la API para cuando se conecta
-    @Override
-    public void onConnected(@Nullable Bundle bundle) {
-        Log.i(TAG, "onConnected()");
-    }
-
-    // Callback de la API para cuando se suspende
-    @Override
-    public void onConnectionSuspended(int i) {
-        Log.w(TAG, "onConnectionSuspended()");
-    }
-
-    // Si no se consigue realizar la conexión
-    @Override
-    public void onConnectionFailed(@NonNull ConnectionResult connectionResult) {
-        Log.w(TAG, "onConnectionFailed()");
-    }
 }
